@@ -1,35 +1,5 @@
-use core::str;
-use regex::Regex;
-use std::{collections::{hash_map, HashMap}, fs::File, io::Read};
-
-fn read_binary_file(file_path: &str) -> std::io::Result<Vec<u8>> {
-    let mut file = File::open(file_path)?;
-    let mut buffer = Vec::new();
-    file.read_to_end(&mut buffer)?;
-    Ok(buffer)
-}
-
-fn extract_file_name(file_content: &[u8]) -> Option<String> {
-    let content_str = str::from_utf8(file_content).ok()?;
-    let re = Regex::new(r#"\.file\s+"([^"]+)""#).unwrap();
-    re.captures(content_str)
-        .and_then(|cap| cap.get(1).map(|m| m.as_str().to_string()))
-}
-
-fn generate_hashmap(file_content: &[u8], filename: &str) -> HashMap<String,String>{
-    let content_str = str::from_utf8(file_content).expect("Invalid UTF-8 sequence");
-    let regex_pattern = format!(r#"(?m)^#\s*{}:(\d+)"#, regex::escape(filename));
-    let re = Regex::new(&regex_pattern).unwrap();
-    let mut map = HashMap::new();
-
-    for cap in re.captures_iter(content_str){
-        if let Some(line) = cap.get(1){
-            let key = format!("{}:{}",filename,line.as_str());
-            map.insert(key, filename.to_string());
-        }
-    }
-    map
-}
+mod parser;
+use parser::*;
 
 fn main() -> std::io::Result<()> {
     let file1 = "/home/cbq2kor/Desktop/DevSpace/Test/RDS/C/Cpp/Multiplication/math_O2_fv.asm";
