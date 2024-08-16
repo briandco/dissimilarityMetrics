@@ -1,9 +1,12 @@
+#![feature(lazy_cell)]
+
 mod parser;
 mod levenstein;
 use std::collections::HashMap;
 
 use parser::*;
 use levenstein::*;
+use regex::bytes;
 
 fn main() -> std::io::Result<()> {
     // let file1 = "/home/cbq2kor/Desktop/DevSpace/Test/RDS/C/Cpp/Multiplication/operation_fverb_o1.asm";
@@ -14,6 +17,11 @@ fn main() -> std::io::Result<()> {
 
     // let file1 = "/home/cbq2kor/Desktop/DevSpace/Test/RDS/Files/file1.txt";
     // let file2 = "/home/cbq2kor/Desktop/DevSpace/Test/RDS/Files/file2.txt";
+    let file_block = FileBlock::new(file1);
+    let data_file1 = file_block.read_binary_file()?;
+    let file_name = file_block.clone().get_file_name(&data_file1).ok_or("Test").unwrap();
+    // println!("filename {}", file_name);
+    file_block.generate_hashmap(&data_file1, &file_name);
 
     let data1 = read_binary_file(file1)?;
     let data2 = read_binary_file(file2)?;
