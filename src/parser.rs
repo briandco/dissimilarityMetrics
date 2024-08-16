@@ -1,6 +1,6 @@
 use core::str;
 use regex::Regex;
-use std::{collections::{hash_map, HashMap}, fs::File, io::Read, io::Result};
+use std::{collections::HashMap, fs::File, io::Read, io::Result};
 
 /// Reads file & returns the content as buffer of Vec<u8>
 ///
@@ -30,7 +30,7 @@ pub fn extract_file_name(file_content: &[u8]) -> Option<String> {
 /// WIP..
 pub fn generate_hashmap(file_content: &[u8], filename: &str) -> HashMap<String,String>{
     let content_str = str::from_utf8(file_content).expect("Invalid UTF-8 sequence");
-    let regex_pattern = format!(r#"(?m)^#\s*{}:(\d+)"#, regex::escape(filename));
+    let regex_pattern = format!(r#"(?m)^#\s*(?:\./)?{}:(\d+)"#, regex::escape(filename));
     let re = Regex::new(&regex_pattern).unwrap();
     let mut map = HashMap::new();
 
@@ -47,12 +47,52 @@ pub fn generate_hashmap(file_content: &[u8], filename: &str) -> HashMap<String,S
                     instruction.push(iter.next().unwrap().to_string());
                 }
                 // Append to existing value if the key already exists
-                map.entry(key).and_modify(|e: &mut String| {
+                map.entry(key.clone()).and_modify(|e: &mut String| {
                     if !e.is_empty() {
                         e.push('\n');
                     }
                     e.push_str(&instruction.join("\n"));
                 }).or_insert_with(|| instruction.join("\n"));
+
+                println!("key : {}", key.as_str());
+                println!("value : {:?}", instruction);
+            }
+        }
+    }  
+    map
+}
+
+
+pub fn generate_hashmap_srcRefBlock(file_content: &[u8], _filename: &str) -> HashMap<String,String>{
+    let content_str = str::from_utf8(file_content).expect("Invalid UTF-8 sequence");
+    let regex_pattern = r#"(?m)^#\s*([\w/.\+-]+):(\d+):"#;
+    let re = Regex::new(&regex_pattern).unwrap();
+    let mut map = HashMap::new();
+
+    let mut iter = content_str.lines().peekable();  
+    while let Some(line) = iter.next() {
+        if let Some(cap) = re.captures(line) {
+            if let Some(file_path) = cap.get(1) {
+                if let Some(line_number) = cap.get(2) {
+                    let key = format!("{}:{}", file_path.as_str(), line_number.as_str());
+                    let mut instruction = Vec::new();
+                    while let Some(next_line) = iter.peek() {
+                        if re.is_match(next_line) {
+                            break;
+                        }
+                        instruction.push(iter.next().unwrap().to_string());
+                    }
+                    // Append to existing value if the key already exists
+                    map.entry(key.clone()).and_modify(|e: &mut String| {
+                        if !e.is_empty() {
+                            e.push('\n');
+                        }
+                        e.push_str(&instruction.join("\n"));
+                    }).or_insert_with(|| instruction.join("\n"));
+
+                    println!("key : {}", key.as_str());
+                    println!("value : {:?}", instruction);
+                }
             }
         }
     }  

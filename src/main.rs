@@ -6,11 +6,14 @@ use parser::*;
 use levenstein::*;
 
 fn main() -> std::io::Result<()> {
-    // let file1 = "/home/cbq2kor/Desktop/DevSpace/Test/RDS/C/Cpp/Multiplication/math_O1_fv.asm";
-    // let file2 = "/home/cbq2kor/Desktop/DevSpace/Test/RDS/C/Cpp/Multiplication/math_O2_fv.asm";
+    // let file1 = "/home/cbq2kor/Desktop/DevSpace/Test/RDS/C/Cpp/Multiplication/operation_fverb_o1.asm";
+    // let file2 = "/home/cbq2kor/Desktop/DevSpace/Test/RDS/C/Cpp/Multiplication/operation_fverb_o2.asm";
 
-    let file1 = "/home/cbq2kor/Desktop/DevSpace/Test/RDS/Files/file1.txt";
-    let file2 = "/home/cbq2kor/Desktop/DevSpace/Test/RDS/Files/file2.txt";
+    let file1 = "/home/cbq2kor/Desktop/DevSpace/Test/RDS/C/Cpp/Multiplication/math_O1_fv.asm";
+    let file2 = "/home/cbq2kor/Desktop/DevSpace/Test/RDS/C/Cpp/Multiplication/math_O2_fv.asm";
+
+    // let file1 = "/home/cbq2kor/Desktop/DevSpace/Test/RDS/Files/file1.txt";
+    // let file2 = "/home/cbq2kor/Desktop/DevSpace/Test/RDS/Files/file2.txt";
 
     let data1 = read_binary_file(file1)?;
     let data2 = read_binary_file(file2)?;
@@ -34,13 +37,23 @@ fn main() -> std::io::Result<()> {
         (Some(_), None) => println!("File2 name not found"),
     }
 
+    // if let Some(file_name1) = &file_name1 {
+    //     map1 = generate_hashmap(&data1, file_name1);
+    //     println!("Map from file1: {:?}", map1);
+    // }
+    
+    // if let Some(file_name2) = &file_name2 {
+    //     map2 = generate_hashmap(&data2, file_name2);
+    //     println!("Map from file2: {:?}", map2);
+    // }
+
     if let Some(file_name1) = &file_name1 {
-        map1 = generate_hashmap(&data1, file_name1);
+        map1 = generate_hashmap_srcRefBlock(&data1, file_name1);
         println!("Map from file1: {:?}", map1);
     }
     
     if let Some(file_name2) = &file_name2 {
-        map2 = generate_hashmap(&data2, file_name2);
+        map2 = generate_hashmap_srcRefBlock(&data2, file_name2);
         println!("Map from file2: {:?}", map2);
     }
 
@@ -61,13 +74,16 @@ fn main() -> std::io::Result<()> {
             }
 
             println!("Key: {}, Levenshtein distance: {}, normalized distance: {}", key, distance, normalized_distance);
+            let max_file_len = value1.len().max(value2.len()) as f64;
+            let change_percent = (distance as f64 / max_file_len) * 100.0;
+            println!("Change % = {}", change_percent);
         }
         else {
             println!("Key: {} does not exist in map2", key);
             total_normalized_distance += value1.len() as f64;
             count +=1;
         }
-    }
+   }
 
     for (key, value) in &map2 {
         if !map1.contains_key(key){
