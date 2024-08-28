@@ -22,6 +22,7 @@ fn main() -> std::io::Result<()> {
     let file_name = file_block.clone().get_file_name(&data_file1).ok_or("Test").unwrap();
     // println!("filename {}", file_name);
     file_block.generate_hashmap(&data_file1, &file_name);
+    levenstein::generate_levinstine_map(map1, map2);
 
     let data1 = read_binary_file(file1)?;
     let data2 = read_binary_file(file2)?;
