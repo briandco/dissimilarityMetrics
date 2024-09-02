@@ -7,3 +7,6 @@ edition = "2021"
 
 [dependencies]
 regex = "1.7"
+ndarray = "0.15"
+eframe = "0.27"
+rfd = "0.12.0"

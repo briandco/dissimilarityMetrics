@@ -204,8 +204,8 @@ pub fn generate_hashmap(file_content: &[u8], filename: &str) -> HashMap<String,S
                     e.push_str(&instruction.join("\n"));
                 }).or_insert_with(|| instruction.join("\n"));
 
-                println!("key : {}", key.as_str());
-                println!("value : {:?}", instruction);
+                // println!("key : {}", key.as_str());
+                // println!("value : {:?}", instruction);
             }
         }
     }  
@@ -240,8 +240,8 @@ pub fn generate_hashmap_srcRefBlock(file_content: &[u8], _filename: &str) -> Has
                         e.push_str(&instruction.join("\n"));
                     }).or_insert_with(|| instruction.join("\n"));
 
-                    println!("key : {}", key.as_str());
-                    println!("value : {:?}", instruction);
+                    // println!("key : {}", key.as_str());
+                    // println!("value : {:?}", instruction);
                 }
             }
         }
