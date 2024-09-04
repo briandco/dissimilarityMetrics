@@ -258,20 +258,21 @@ impl eframe::App for MyApp {
                                     let similarity = cosine_similarity(&padded_str1, &padded_str2);
 
                                     output_text.push_str(&format!(
-                                        "Key: {}, Levenshtein distance: {}, cosine similarity: {}\n",
+                                        "Key: {}, Levenshtein distance: {}, cosine similarity: {} ",
                                         key, distance, similarity
                                     ));
                                     let max_file_len = value1.len().max(value2.len()) as f64;
                                     let change_percent = (distance as f64 / max_file_len) * 100.0;
-                                    output_text.push_str(&format!("Change % = {}\n", change_percent));
+                                    output_text.push_str(&format!("Change % = {}\n \n", change_percent));
+                                    
                                 } else {
-                                    output_text.push_str(&format!("Key: {} does not exist in map2\n", key));
+                                    output_text.push_str(&format!("Key: {} does not exist in map2 \n\n", key));
                                 }
                             }
 
                             for (key, _value) in &map2 {
                                 if !map1.contains_key(key) {
-                                    output_text.push_str(&format!("Key: {} does not exist in map1\n", key));
+                                    output_text.push_str(&format!("Key: {} does not exist in map1\n\n", key));
                                 }
                             }
 
@@ -279,6 +280,7 @@ impl eframe::App for MyApp {
                             self.output_text = output_text.clone();
                             self.should_display_output = true; // Set the flag to true when calculation is done
                             println!("Calculation complete.");
+                            //println!("{}",output_text);
                         }
                         _ => {
                             self.levenshtein_distance = None;
@@ -292,43 +294,43 @@ impl eframe::App for MyApp {
                 }
             }
 
-            // New "Get Result" button
-            if ui.button("Get Result").clicked() {
-                self.should_display_output = true; // Set the flag when the button is clicked
+            // // Display Results
+            match (&self.file1_name, &self.file2_name) {
+                (None, None) => {
+                    ui.label("No file names found".to_string());
+                }
+                (None, Some(file2_name)) => {
+                    ui.label(format!("File 1 name not found, but File 2 name is: {}", file2_name));
+                }
+                (Some(file1_name), None) => {
+                    ui.label(format!("File 2 name not found, but File 1 name is: {}", file1_name));
+                }
+                (Some(file1_name), Some(file2_name)) => {
+                    if file1_name == file2_name {
+                        ui.label(format!("File name: {}", file1_name));
+                    } else {
+                        ui.label(format!("Files do not match: {} != {}", file1_name, file2_name));
+                    }
+                }
             }
+
+            if let Some(distance) = self.levenshtein_distance {
+                ui.label(format!("Levenshtein Distance: {}", distance));
+            }
+
+            if let Some(error_message) = &self.error_message {
+                ui.label(format!("Error: {}", error_message));
+            }
+
+            // // New "Get Result" button
+            // if ui.button("Get Result").clicked() {
+            //     self.should_display_output = true; // Set the flag when the button is clicked
+            // }
 
             // Display the complete output text if the flag is set
             if self.should_display_output {
-                ui.label(output_text);
+                ui.label(&self.output_text);
             }
-
-            // // Display Results
-            // match (&self.file1_name, &self.file2_name) {
-            //     (None, None) => {
-            //         ui.label("No file names found".to_string());
-            //     }
-            //     (None, Some(file2_name)) => {
-            //         ui.label(format!("File 1 name not found, but File 2 name is: {}", file2_name));
-            //     }
-            //     (Some(file1_name), None) => {
-            //         ui.label(format!("File 2 name not found, but File 1 name is: {}", file1_name));
-            //     }
-            //     (Some(file1_name), Some(file2_name)) => {
-            //         if file1_name == file2_name {
-            //             ui.label(format!("File name: {}", file1_name));
-            //         } else {
-            //             ui.label(format!("Files do not match: {} != {}", file1_name, file2_name));
-            //         }
-            //     }
-            // }
-
-            // if let Some(distance) = self.levenshtein_distance {
-            //     ui.label(format!("Levenshtein Distance: {}", distance));
-            // }
-
-            // if let Some(error_message) = &self.error_message {
-            //     ui.label(format!("Error: {}", error_message));
-            // }
         });
     }
 }
