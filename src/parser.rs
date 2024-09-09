@@ -263,17 +263,25 @@ pub fn generate_hashmap_srcRefBlock(file_content: &[u8], _filename: &str) -> Has
                 if let Some(line_number) = cap.get(2) {
                     let key = format!("{}:{}", file_path.as_str(), line_number.as_str());
                     let mut instruction = Vec::new();
+                    
                     while let Some(next_line) = iter.peek() {
                         if re.is_match(next_line) {
-                            break;
+                            break; // Stop if a new key pattern is found
                         }
+                        
                         let inst = iter.next().unwrap().split_whitespace().next().unwrap_or("").to_string();
                         
+                        // Stop collecting instructions if "main:" is found
+                        if inst == "main:" {
+                            break;
+                        }
+
                         // Ignore lines that start with a dot, number, or underscore
                         if !(inst.starts_with('.') || inst.starts_with(char::is_numeric) || inst.starts_with('_')) {
                             instruction.push(inst);
                         }
                     }
+
                     // Append to existing value if the key already exists
                     map.entry(key.clone()).and_modify(|e: &mut String| {
                         if !e.is_empty() {
