@@ -241,10 +241,12 @@ impl eframe::App for MyApp {
                             // Generate hashmaps for both files
                             if let Some(file_name1) = &file_name1 {
                                 map1 = generate_hashmap_srcRefBlock(&data1, file_name1);
+                                println!("{:?}",map1);
                             }
 
                             if let Some(file_name2) = &file_name2 {
                                 map2 = generate_hashmap_srcRefBlock(&data2, file_name2);
+                                println!("{:?}",map2);
                             }
 
                             // Perform calculations and collect the results in output_text
@@ -322,11 +324,6 @@ impl eframe::App for MyApp {
                 ui.label(format!("Error: {}", error_message));
             }
 
-            // // New "Get Result" button
-            // if ui.button("Get Result").clicked() {
-            //     self.should_display_output = true; // Set the flag when the button is clicked
-            // }
-
             // Display the complete output text if the flag is set
             if self.should_display_output {
                 ui.label(&self.output_text);
@@ -340,74 +337,74 @@ impl eframe::App for MyApp {
 
 
 fn main() -> std::io::Result<()> {
-    // let options = eframe::NativeOptions::default();
-    // let _ = eframe::run_native(
-    //     "File Reader GUI",
-    //     options,
-    //     Box::new(|_cc| Box::new(MyApp::default())),
-    // );
-    let file1 = "/home/cbq2kor/Desktop/DevSpace/Test/RDS/C/Cpp/Multiplication/operation_fverb_o1.asm";
-    let file2 = "/home/cbq2kor/Desktop/DevSpace/Test/RDS/C/Cpp/Multiplication/operation_fverb_o2.asm";
+    let options = eframe::NativeOptions::default();
+    let _ = eframe::run_native(
+        "File Reader GUI",
+        options,
+        Box::new(|_cc| Box::new(MyApp::default())),
+    );
+//     let file1 = "/home/cbq2kor/Desktop/DevSpace/Test/RDS/C/Cpp/Multiplication/operation_fverb_o1.asm";
+//     let file2 = "/home/cbq2kor/Desktop/DevSpace/Test/RDS/C/Cpp/Multiplication/operation_fverb_o2.asm";
 
-    // let file1 = "/home/cbq2kor/Desktop/DevSpace/Test/RDS/C/Cpp/Multiplication/math_O1_fv.asm";
-    // let file2 = "/home/cbq2kor/Desktop/DevSpace/Test/RDS/C/Cpp/Multiplication/math_O2_fv.asm";
+//     // let file1 = "/home/cbq2kor/Desktop/DevSpace/Test/RDS/C/Cpp/Multiplication/math_O1_fv.asm";
+//     // let file2 = "/home/cbq2kor/Desktop/DevSpace/Test/RDS/C/Cpp/Multiplication/math_O2_fv.asm";
 
-    let data1 = read_binary_file(file1)?;
-    let data2 = read_binary_file(file2)?;
+//     let data1 = read_binary_file(file1)?;
+//     let data2 = read_binary_file(file2)?;
 
-    let file_name1 = extract_file_name(&data1);
-    let file_name2 = extract_file_name(&data2);
+//     let file_name1 = extract_file_name(&data1);
+//     let file_name2 = extract_file_name(&data2);
 
-    let mut map1 = HashMap::new();
-    let mut map2 = HashMap::new();
+//     let mut map1 = HashMap::new();
+//     let mut map2 = HashMap::new();
 
-    match (file_name1.as_deref(), file_name2.as_deref()) {
-        (Some(name1), Some(name2)) => {
-            if name1 == name2 {
-                println!("File name = {}", name1);
-            } else {
-                println!("Files do not match: {} != {}", name1, name2);
-            }
-        }
-        (None, None) => println!("File names not found in either files"),
-        (None, Some(_)) => println!("File1 name not found"),
-        (Some(_), None) => println!("File2 name not found"),
-    }
+//     match (file_name1.as_deref(), file_name2.as_deref()) {
+//         (Some(name1), Some(name2)) => {
+//             if name1 == name2 {
+//                 println!("File name = {}", name1);
+//             } else {
+//                 println!("Files do not match: {} != {}", name1, name2);
+//             }
+//         }
+//         (None, None) => println!("File names not found in either files"),
+//         (None, Some(_)) => println!("File1 name not found"),
+//         (Some(_), None) => println!("File2 name not found"),
+//     }
 
-    if let Some(file_name1) = &file_name1 {
-        map1 = generate_hashmap_srcRefBlock(&data1, file_name1);
-       // println!("Map from file1: {:?}", map1);
-    }
+//     if let Some(file_name1) = &file_name1 {
+//         map1 = generate_hashmap_srcRefBlock(&data1, file_name1);
+//         println!("Map from file1: {:?}", map1);
+//     }
     
-    if let Some(file_name2) = &file_name2 {
-        map2 = generate_hashmap_srcRefBlock(&data2, file_name2);
-      //  println!("Map from file2: {:?}", map2);
-    }
+//     if let Some(file_name2) = &file_name2 {
+//         map2 = generate_hashmap_srcRefBlock(&data2, file_name2);
+//        println!("Map from file2: {:?}", map2);
+//     }
 
-    println!("\n");
+//     println!("\n");
 
-    for(key, value1) in &map1{
-        if let Some( value2 ) = map2.get(key){
-            let distance = optimized_levenshtein(value1.as_bytes(), value2.as_bytes());
+//     for(key, value1) in &map1{
+//         if let Some( value2 ) = map2.get(key){
+//             let distance = optimized_levenshtein(value1.as_bytes(), value2.as_bytes());
 
-            let (padded_str1, padded_str2) = pad_strings(value1, value2);
-            let similarity = cosine_similarity(&padded_str1, &padded_str2);
+//             let (padded_str1, padded_str2) = pad_strings(value1, value2);
+//             let similarity = cosine_similarity(&padded_str1, &padded_str2);
 
-            println!("Key: {}, Levenshtein distance: {} , cosine similarity: {}", key, distance, similarity);
-            let max_file_len = value1.len().max(value2.len()) as f64;
-            let change_percent = (distance as f64 / max_file_len) * 100.0;
-            println!("Change % = {}", change_percent);
-        }
-        else {
-            println!("Key: {} does not exist in map2", key);
-        }
-   }
+//             println!("Key: {}, Levenshtein distance: {} , cosine similarity: {}", key, distance, similarity);
+//             let max_file_len = value1.len().max(value2.len()) as f64;
+//             let change_percent = (distance as f64 / max_file_len) * 100.0;
+//             println!("Change % = {}", change_percent);
+//         }
+//         else {
+//             println!("Key: {} does not exist in map2", key);
+//         }
+//    }
 
-    for (key, _value) in &map2 {
-        if !map1.contains_key(key){
-            println!("Key: {} does not exist in map1", key);
-        }
-    }
+//     for (key, _value) in &map2 {
+//         if !map1.contains_key(key){
+//             println!("Key: {} does not exist in map1", key);
+//         }
+//     }
     
     Ok(())
 }
