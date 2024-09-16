@@ -2,6 +2,14 @@ use core::str;
 use regex::Regex;
 use std::{cell::OnceCell, collections::HashMap, error, fs::File, io::{Read, Result}};
 
+use nom::{
+    bytes::complete::{tag, take_until, take_while1},
+    character::complete::{digit1, line_ending, not_line_ending},
+    combinator::{map_res, opt},
+    sequence::{preceded, tuple},
+    IResult,
+};
+
 #[derive(Debug, Clone)]
 #[no_mangle]
 pub struct SrcReference{
@@ -204,8 +212,7 @@ pub fn generate_hashmap(file_content: &[u8], filename: &str) -> HashMap<String,S
                     e.push_str(&instruction.join("\n"));
                 }).or_insert_with(|| instruction.join("\n"));
 
-                // println!("key : {}", key.as_str());
-                // println!("value : {:?}", instruction);
+                
             }
         }
     }  
@@ -250,11 +257,16 @@ pub fn generate_hashmap(file_content: &[u8], filename: &str) -> HashMap<String,S
 //     map
 // }
 
-pub fn generate_hashmap_srcRefBlock(file_content: &[u8], _filename: &str) -> HashMap<String, String> {
+
+// eFrame parser
+
+
+pub fn generate_hashmap_srcRefBlock(file_content: &[u8], _filename: &str) -> (HashMap<String, String> , String){
     let content_str = std::str::from_utf8(file_content).expect("Invalid UTF-8 sequence");
     let regex_pattern = r#"(?m)^#\s*([\w/.\+-]+):(\d+):"#;
     let re = Regex::new(&regex_pattern).unwrap();
     let mut map = HashMap::new();
+    let mut file_string = String::new();
 
     let mut iter = content_str.lines().peekable();
     while let Some(line) = iter.next() {
@@ -263,7 +275,8 @@ pub fn generate_hashmap_srcRefBlock(file_content: &[u8], _filename: &str) -> Has
                 if let Some(line_number) = cap.get(2) {
                     let key = format!("{}:{}", file_path.as_str(), line_number.as_str());
                     let mut instruction = Vec::new();
-                    
+                    file_string.push_str(key.as_str());
+
                     while let Some(next_line) = iter.peek() {
                         if re.is_match(next_line) {
                             break; // Stop if a new key pattern is found
@@ -278,7 +291,8 @@ pub fn generate_hashmap_srcRefBlock(file_content: &[u8], _filename: &str) -> Has
 
                         // Ignore lines that start with a dot, number, or underscore
                         if !(inst.starts_with('.') || inst.starts_with(char::is_numeric) || inst.starts_with('_')) {
-                            instruction.push(inst);
+                            instruction.push(inst.clone());
+                            file_string.push_str(inst.as_str())
                         }
                     }
 
@@ -293,5 +307,68 @@ pub fn generate_hashmap_srcRefBlock(file_content: &[u8], _filename: &str) -> Has
             }
         }
     }
-    map
+    (map,file_string)
 }
+
+// fn parse_header( mut input: &str) -> IResult<&str, (&str, &str)>{
+    
+//     input = "# hello :";
+//     let (input, _) = tag("# ")(input)?;
+//     println!("ph input -> {}", input);
+//     println!("in Parser header");
+    
+
+//     let (input, filepath) = take_until(":")(input)?;
+
+//     println!("ph input -> {} file path -> {}", input, filepath);
+
+//     let (input, _) = tag(":")(input)?;
+//     let (input, line_number) = digit1(input)?;
+//     let (input, _) = tag(":")(input)?;
+//     let (input, _) = opt(not_line_ending)(input)?;
+//     let (input, _) = line_ending(input)?;
+//     Ok((input, (filepath, line_number)))
+// }
+
+// fn parse_instruction(input: &str) -> IResult<&str, &str> {
+//     let (input, instruction) = take_while1(|c: char| !c.is_whitespace() && c != '\n')(input)?;
+//     Ok((input, instruction))
+// }
+
+// pub fn generate_hashmap_srcRefBlock(file_content: &[u8], _filename: &str) -> HashMap<String, String> {
+//     let content_str = str::from_utf8(file_content).expect("Invalid UTF-8 sequence");
+//     let mut map = HashMap::new();
+//     let mut input = content_str;
+
+//     println!(" In generate Hashmap");
+//     while let Ok((remaining_input, (file_path, line_number))) = parse_header(input) {
+//         let key = format!("{}:{}", file_path, line_number);
+//         let mut instruction = Vec::new();
+//         input = remaining_input;
+
+//         while let Ok((remaining_input, inst)) = parse_instruction(input) {
+//             // Stop collecting instructions if "main:" is found
+//             if inst == "main:" {
+//                 input = remaining_input;
+//                 break;
+//             }
+
+//             // Ignore lines that start with a dot, number, or underscore
+//             if !(inst.starts_with('.') || inst.chars().next().unwrap().is_numeric() || inst.starts_with('_')) {
+//                 instruction.push(inst.to_string());
+//             }
+
+//             input = remaining_input;
+//         }
+
+//         // Append to existing value if the key already exists
+//         map.entry(key.clone()).and_modify(|e: &mut String| {
+//             if !e.is_empty() {
+//                 e.push('\n');
+//             }
+//             e.push_str(&instruction.join("\n"));
+//         }).or_insert_with(|| instruction.join("\n"));
+//     }
+
+//     map
+// }
