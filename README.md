@@ -1,4 +1,5 @@
 **Dissimilarity Metrics Calculator**
+
 Overview
 
 The Dissimilarity Metrics Calculator is a desktop application built using Rust and egui (a simple, fast, and flexible GUI library). It provides a convenient way to compare two files and calculate various dissimilarity metrics such as Levenshtein Distance, Cosine Similarity, and Percentage Change.
