@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use ndarray::Array1;
 
 //function to calculate cosine similarity
@@ -20,8 +22,9 @@ pub fn cosine_similarity(str1: &str, str2: &str) -> f64{
 
     // Return cosine similarity
     dot_product / (norm_arr1 * norm_arr2)
-
 }
+
+
 
 //function to pad two vector to same length
 pub fn pad_vector(vec1: Vec<u8>, vec2: Vec<u8>)-> (Vec<u8>,Vec<u8>){

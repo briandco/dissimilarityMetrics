@@ -24,7 +24,8 @@ pub struct MyApp {
     file1_text: String,
     file2_text: String,
     file_length: f64,
-    results: Vec<(String, i32, f64, f64)>, // Add this field to store the results
+    key_distance: i32,
+    results: Vec<(String, i32, i32, f64, f64)>, // Add this field to store the results
 }
 
 impl Default for MyApp {
@@ -42,6 +43,7 @@ impl Default for MyApp {
             file1_text: String::new(),
             file2_text: String::new(),
             file_length: 0.0,
+            key_distance: 0,
             results: Vec::new(), // Initialize the results field
         }
     }
@@ -56,6 +58,7 @@ impl MyApp {
 
 impl eframe::App for MyApp {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
+       
         let mut map1 = HashMap::new();
         let mut map2 = HashMap::new();
 
@@ -106,8 +109,8 @@ impl eframe::App for MyApp {
 
                             match (file_name1.as_deref(), file_name2.as_deref()) {
                                 (Some(name1), Some(name2)) => {
-                                    self.file1_name = file_name1.clone();
-                                    self.file2_name = file_name2.clone();
+                                    self.file1_name = Some(name1.to_string());
+                                    self.file2_name = Some(name2.to_string());
                                     println!("File names extracted: {} and {}", name1, name2);
                                 }
                                 _ => println!("One or both file names not found."),
@@ -116,12 +119,12 @@ impl eframe::App for MyApp {
                             // Generate hashmaps for both files
                             if let Some(file_name1) = &file_name1 {
                                 (map1, self.file1_text) = generate_hashmap_srcRefBlock(&data1, file_name1);
-                               // println!("{:?}", self.file1_text);
+                               println!("{:?}", self.file1_text);
                             }
 
                             if let Some(file_name2) = &file_name2 {
                                 (map2, self.file2_text) = generate_hashmap_srcRefBlock(&data2, file_name2);
-                              //  println!("{:?}", self.file2_text);
+                               println!("{:?}", self.file2_text);
                             }
 
                             // Clear previous results
@@ -139,11 +142,12 @@ impl eframe::App for MyApp {
                                     let max_file_len = value1.len().max(value2.len()) as f64;
                                     self.file_length += max_file_len;
                                     let change_percent = (distance as f64 / max_file_len) * 100.0;
-
+                                    
                                     // Store results in the vector
                                     self.results.push((
                                         key.clone(),
                                         distance as i32,
+                                        max_file_len as i32,
                                         similarity,
                                         change_percent,
                                     ));
@@ -152,6 +156,7 @@ impl eframe::App for MyApp {
                                     self.results.push((
                                         key.clone(),
                                         -1, // Indicate missing value with a sentinel
+                                        -1,
                                         -1.0,
                                         -1.0,
                                     ));
@@ -164,6 +169,7 @@ impl eframe::App for MyApp {
                                     self.results.push((
                                         key.clone(),
                                         -1, // Indicate missing value with a sentinel
+                                        -1,
                                         -1.0,
                                         -1.0,
                                     ));
@@ -196,7 +202,7 @@ impl eframe::App for MyApp {
             // Display Results
             match (&self.file1_name, &self.file2_name) {
                 (None, None) => {
-                    ui.label("No file names found".to_string());
+                    //ui.label("No file names found".to_string());
                 }
                 (None, Some(file2_name)) => {
                     ui.label(format!("File 1 name not found, but File 2 name is: {}", file2_name));
@@ -254,17 +260,20 @@ impl eframe::App for MyApp {
                         ui.label("Key");
                         ui.label("Levenshtein Distance");
                         ui.label("Cosine Similarity");
+                        ui.label("Block Length");
                         ui.label("Change %");
                         ui.end_row();
 
-                        for (key, distance, similarity, change_percent) in &self.results {
+                        for (key, distance,block_length, similarity, change_percent) in &self.results {
                             if *distance != -1 {
                                 ui.label(key);
                                 ui.label(format!("{}", distance));
                                 ui.label(format!("{:.2}", similarity));
+                                ui.label(format!("{:.2}", block_length));
                                 ui.label(format!("{:.2}%", change_percent));
                             } else {
                                 ui.label(key);
+                                ui.label("N/A");
                                 ui.label("N/A");
                                 ui.label("N/A");
                                 ui.label("N/A");
@@ -274,6 +283,7 @@ impl eframe::App for MyApp {
                     });
                     
             }
+            
         });
     }
 }
@@ -287,7 +297,8 @@ impl eframe::App for MyApp {
 fn main() -> std::io::Result<()> {
     let options = eframe::NativeOptions::default();
     let _ = eframe::run_native(
-        "File Reader GUI",
+
+        "Disimilarity Metrics",
         options,
         Box::new(|_cc| Box::new(MyApp::default())),
     );
